@@ -7,6 +7,8 @@ var SHEET_NAME = "Movie List";
 var API_URL = "www.omdbapi.com/";
 var IMDB_URL = "www.imdb.com/title/";
 
+var ADD_PLOT = true;
+
 //global
 var ss = SpreadsheetApp.getActive();
 var sh = ss.getSheetByName(SHEET_NAME);
@@ -24,7 +26,7 @@ function getEmptyScoreRows(){
   
   var allScoresValues = sh.getRange(2, SCORE_COLUMN_NO, lRow, 1).getValues();
   
-  for (var i = 1; i < allScoresValues.length; i++) {
+  for (var i = 0; i < allScoresValues.length; i++) {
     var scoreValue = allScoresValues[i][0];
     
     if (scoreValue === "") {
@@ -43,10 +45,10 @@ function getEmptyScoreRows(){
 function addRTScores(emptyScoreRowNos) {
   for (var i = 0; i < emptyScoreRowNos.length; i++){
     var row = sh.getRange(emptyScoreRowNos[i] , 1, 1, lCol);
-    var title = row.getCell(1, TITLE_COLUMN_NO).getValue();
+    var titleCol = row.getCell(1, TITLE_COLUMN_NO);
 
-    if (title !== ""){
-      var params = getRTScore(title);
+    if (titleCol.getValue() !== ""){
+      var params = getRTScore(titleCol.getValue());
       var score = params.tomatoMeter;
       
       var scoreCol = row.getCell(1, SCORE_COLUMN_NO);
@@ -55,6 +57,11 @@ function addRTScores(emptyScoreRowNos) {
         scoreCol.setValue("N/A");
       } else {
         scoreCol.setFormula("=HYPERLINK(\"" + params.tomatoURL + "\",\"" + score + "%\")");
+      }
+      
+      if (ADD_PLOT){
+        var plot = params.Plot;
+        if (plot !== undefined) titleCol.setNote(plot);
       }
     }
   }
