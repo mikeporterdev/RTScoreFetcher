@@ -17,21 +17,21 @@ function myOnEdit(e){
   getEmptyScoreRows();
 }
 
-function getEmptyScoreRows(){
-  //Start from 2 to account for headers
-  var allCellsRange = sh.getRange(2, 1, lRow, lCol);
-  
+function getEmptyScoreRows(){  
   //Split into two lists so that empty scores are prioritized before checking n/a ones
   var rowNoList = [];
   var naList = [];
   
-  for (var i = 1; i < allCellsRange.getNumRows(); i++) {
-    var scoreValue = allCellsRange.getCell(i, SCORE_COLUMN_NO).getValue();
+  var allScoresValues = sh.getRange(2, SCORE_COLUMN_NO, lRow, 1).getValues();
+  
+  for (var i = 1; i < allScoresValues.length; i++) {
+    var scoreValue = allScoresValues[i][0];
+    
     if (scoreValue === "") {
-      //increment i to account for headers
-      rowNoList.push(i + 1);
+      //increment i by 2 to account for headers and 0 indexing
+      rowNoList.push(i + 2);
     } else if (scoreValue === "N/A") {
-      naList.push(i + 1); 
+      naList.push(i + 2); 
     }
   }
   
@@ -45,15 +45,17 @@ function addRTScores(emptyScoreRowNos) {
     var row = sh.getRange(emptyScoreRowNos[i] , 1, 1, lCol);
     var title = row.getCell(1, TITLE_COLUMN_NO).getValue();
 
-    var params = getRTScore(title);
-    var score = params.tomatoMeter;
-    
-    var scoreCol = row.getCell(1, SCORE_COLUMN_NO);
-    
-    if (score === undefined || score === "N/A"){
-      scoreCol.setValue("N/A");
-    } else {
-      scoreCol.setFormula("=HYPERLINK(\"" + params.tomatoURL + "\",\"" + score + "%\")");
+    if (title !== ""){
+      var params = getRTScore(title);
+      var score = params.tomatoMeter;
+      
+      var scoreCol = row.getCell(1, SCORE_COLUMN_NO);
+      
+      if (score === undefined || score === "N/A"){
+        scoreCol.setValue("N/A");
+      } else {
+        scoreCol.setFormula("=HYPERLINK(\"" + params.tomatoURL + "\",\"" + score + "%\")");
+      }
     }
   }
 }
